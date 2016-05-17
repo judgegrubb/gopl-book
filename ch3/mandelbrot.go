@@ -2,14 +2,29 @@
 package main
 
 import (
+    "io"
     "image"
     "image/color"
     "image/png"
+    "log"
     "math/cmplx"
+    "net/http"
     "os"
 )
 
 func main() {
+    if len(os.Args) > 1 && os.Args[1] == "web" {
+        handler := func (w http.ResponseWriter, r *http.Request) {
+            write(w)
+        }
+        http.HandleFunc("/", handler)
+        log.Fatal(http.ListenAndServe("localhost:8000", nil))
+        return
+    }
+    write(os.Stdout)
+}
+
+func write(out io.Writer) {
     const (
         xmin, ymin, xmax, ymax  = -2, -2, +2, +2
         width, height           = 1024, 1024
@@ -25,7 +40,7 @@ func main() {
             img.Set(px, py, mandelbrot(z))
         }
     }
-    png.Encode(os.Stdout, img) // NOTE: ignoring errors
+    png.Encode(out, img) // NOTE: ignoring errors
 }
 
 func mandelbrot(z complex128) color.Color {
