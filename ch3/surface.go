@@ -41,29 +41,38 @@ func surface(out io.Writer) {
         "width='%d' height='%d'>", width, height)
     for i := 0; i < cells; i++ {
         for j := 0; j < cells; j++ {
-            ax, ay := corner(i+1, j)
-            bx, by := corner(i, j)
-            cx, cy := corner(i, j+1)
-            dx, dy := corner(i+1, j+1)
-            fmt.Fprintf(out, "<polygon points='%g,%g %g,%g %g,%g %g,%g' />\n", 
-                ax, ay, bx, by, cx, cy, dx, dy)
+            ax, ay, _ := corner(i+1, j)
+            bx, by, _ := corner(i, j)
+            cx, cy, _ := corner(i, j+1)
+            dx, dy, c := corner(i+1, j+1)
+            fmt.Fprintf(out, "<polygon points='%g,%g %g,%g %g,%g %g,%g' style='fill: #%s;'/>\n", 
+                ax, ay, bx, by, cx, cy, dx, dy, c)
         }
     }
     fmt.Fprintln(out, "</svg>")
 }
 
-func corner(i, j int) (float64, float64) {
+func corner(i, j int) (float64, float64, string) {
     // Find point (x,y) at corner of cell (i,j)
     x := xyrange * (float64(i)/cells - 0.5)
     y := xyrange * (float64(j)/cells - 0.5)
     
     // Compute surface height z.
     z := f(x, y)
+    c := fmt.Sprintf("%x", int(math.Abs(z) * 255))
+    if len(c) == 1 {
+        c = "0" + c
+    }
+    if z < 0 {
+        c = "0000" + c
+    } else {
+        c += "0000"
+    }
     
     // Project (x,y,z) isometrically onto 2-D SVG canvas (sx, sy).
     sx := width / 2 + (x - y) * cos30 * xyscale
     sy := height / 2 + (x + y) * sin30 * xyscale - z * zscale
-    return sx, sy
+    return sx, sy, c
 }
 
 func f(x, y float64) float64  {
