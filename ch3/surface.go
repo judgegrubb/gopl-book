@@ -59,6 +59,9 @@ func corner(i, j int) (float64, float64, string) {
     
     // Compute surface height z.
     z := f(x, y)
+    
+    // based on the height calculate an applicable color
+    // between red and blue
     c := fmt.Sprintf("%x", int(math.Abs(z) * 255))
     if len(c) == 1 {
         c = "0" + c
